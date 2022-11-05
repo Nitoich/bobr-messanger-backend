@@ -1,11 +1,11 @@
 import {Body, Controller, Post, Req, Res} from '@nestjs/common';
-import { LoginUserDto } from '../ValidationTypes/User';
-import { UserService } from '../services/user.service';
+import { LoginUserDto } from '../../ValidationTypes/User';
+import { UserService } from '../../services/users/user.service';
 import * as bcrypt from 'bcrypt';
 import {Request, Response} from 'express';
-import JWT from '../support/JWT';
+import JWT from '../../support/JWT';
 import * as crypto from 'crypto';
-import {RefreshTokenService} from "../services/refreshToken.service";
+import {RefreshTokenService} from "../../services/users/refreshToken.service";
 
 @Controller()
 export class AuthUserController {

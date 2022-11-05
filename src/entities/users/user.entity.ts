@@ -1,12 +1,15 @@
 import {Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {RefreshToken} from "./refreshToken.entity";
+import {Message} from "../chat/message.entity";
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true
+  })
   email: string;
 
   @Column()
@@ -20,6 +23,9 @@ export class User {
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refresh_tokens: RefreshToken[];
+
+  @OneToMany(() => Message, (message) => message.owner)
+  messages: Message[];
 
   constructor(
     data = {

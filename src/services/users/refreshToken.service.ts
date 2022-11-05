@@ -1,6 +1,6 @@
 import {Injectable} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
-import {RefreshToken} from "../entities/refreshToken.entity";
+import {RefreshToken} from "../../entities/users/refreshToken.entity";
 import {DataSource, Repository} from "typeorm";
 import * as crypto from "crypto";
 import {UserService} from "./user.service";
@@ -8,7 +8,6 @@ import {UserService} from "./user.service";
 @Injectable()
 export class RefreshTokenService {
     constructor(@InjectRepository(RefreshToken) private refreshTokenRepository: Repository<RefreshToken>,
-    private dataSource: DataSource,
     private userService: UserService) {}
 
     async where(where) {
@@ -26,39 +25,22 @@ export class RefreshTokenService {
         return refreshToken;
     }
 
-    async update(id, data): Promise<RefreshToken> {
-        await this.dataSource
-            .createQueryBuilder()
-            .update(RefreshToken)
-            .set(data)
-            .where("id = :id", { id })
-            .execute();
-
-        return await this.whereOne({ id });
+    async update(id:number, data): Promise<RefreshToken> {
+        return await this.refreshTokenRepository.save({
+            id,
+            ...data
+        });
     }
 
-    async create(userId): Promise<RefreshToken> {
-
+    async create(userId: number): Promise<RefreshToken> {
         const createdTime = new Date().getTime();
-
         const refreshToken = {
             user: await this.userService.findOne(userId),
             refresh_token:  crypto.randomBytes(64).toString('hex'),
             created_time: String(createdTime),
             expired_time: String(createdTime + 30 * 24 * 60 * 60 * 1000)
         };
-
-        await this.dataSource
-            .createQueryBuilder()
-            .insert()
-            .into(RefreshToken)
-            .values([
-                refreshToken
-            ])
-            .execute()
-
-        return await this.refreshTokenRepository.findOneBy({
-            refresh_token: refreshToken.refresh_token,
-        })
+        const newRefreshToken = await this.refreshTokenRepository.create(refreshToken);
+        return await this.refreshTokenRepository.save(newRefreshToken);
     }
 }
